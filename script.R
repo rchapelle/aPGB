@@ -17,7 +17,24 @@ library("grid")
 library("ggplot2")
 library("dslabs")
 
-plot_dir <- here::here("../opencesp-examples/joint_density/plots")
+wd <- ""
+plot_dir <- ""
+
+bor_cols <- function() {
+  c("#534785", "#f55f5e", "#dec91a", "#51A3A3", "#82846D", "#A1C084", "#754F5B","#27476E", "#EB9486")
+}
+
+save_plot <- function(dir, width=7, height=5.5, p = NULL) {
+  files <- list.files(path = dir, pattern = "plot[0-9]+\\.jpg", full.names = FALSE)
+  n <- as.numeric(gsub("plot([0-9]+)\\.jpg", "\\1", files))
+  if (length(n) > 0) max_n <- max(n, na.rm = TRUE)
+  else max_n <- 0
+  if(is.null(p)) p <- ggplot2::last_plot()
+  filename <- paste(dir, "/plot", max_n + 1, ".jpg", sep="")
+  ggplot2::ggsave(file = filename, plot = p,
+         width = width, height = height, dpi = 320)
+  return(filename)
+}
 
 fit_vine_cv <- function(data, max_trunc = 5) {
   max_trunc <- min(max_trunc, ncol(data) - 1)
@@ -134,7 +151,7 @@ ggplot(spiral_plot, aes(x, y, color = class)) +
   facet_wrap(~ method, nrow = 1) +
   coord_equal() +
   labs(x = NULL, y = NULL) +
-  borelli_theme() +
+  theme_minimal() +
   theme(
     legend.position = "none",
     panel.grid = element_blank(),
@@ -143,7 +160,7 @@ ggplot(spiral_plot, aes(x, y, color = class)) +
     axis.ticks = element_blank()
   )
 
-save_plot(here::here("../opencesp-examples/joint_density/plots"), 7, 3)
+save_plot(plot_dir, 7, 3)
 
 
 ######################################
@@ -247,7 +264,7 @@ plot_sim_results <- function(res_nsparse, res_sparse, res_ind, res_manifold, d_v
     ) +
     facet_wrap(~scenario, nrow = 2, scales = "free_y") +
     labs(x = "Dimension", y = if(type == "error") "Mean absolute error" else "Execution time (seconds)", color = "Method") +
-    borelli_theme() +
+    theme_minimal() +
     theme(legend.position = "bottom", strip.text = element_text(size = 14))
 }
 
@@ -263,10 +280,10 @@ res_ind <- sim_exp(sim_ind, dens_ind, n_train, n_test, n_rep, d_vec)
 res_manifold <- sim_exp(sim_manifold, dens_manifold, n_train, n_test, n_rep, d_vec)
 
 plot_sim_results(res_nsparse, res_sparse, res_ind, res_manifold, d_vec, "error")
-save_plot(here::here("../opencesp-examples/joint_density/plots"), 9, 5.5)
+save_plot(plot_dir, 9, 5.5)
 
 plot_sim_results(res_nsparse, res_sparse, res_ind, res_manifold, d_vec, "time")
-save_plot(here::here("../opencesp-examples/joint_density/plots"), 9, 5.5)
+save_plot(plot_dir, 9, 5.5)
 
 
 ######################################
@@ -328,7 +345,7 @@ data("bdims")
 bdims$sex <- NULL
 bdims <- as.data.frame(bdims)
 
-hepatitis <- readRDS(here::here("../opencesp-examples/fcs/hepatitis.rds"))
+hepatitis <- readRDS(paste0(wd, "hepatitis.rds"))
 
 df_l <- list(bdims = bdims, smartpill = smartpill, nhefs = nhefs, peakVO2 = peakVO2, opt = opt, supra = supra, prostate = prostate, blood = blood, hepatitis = hepatitis, ad = ad)
 
@@ -587,7 +604,7 @@ plot_order_res <- function(res, res_real) {
     labs(x = NULL, y = "Normalized mean logarithmic score") +
     scale_x_discrete(labels = labs) +
     guides(x = guide_axis(angle = 45)) +
-    borelli_theme() +
+    theme_minimal() +
     theme(legend.position = "bottom",
           legend.title = element_text(size = 15, margin = margin(r = 10)),
           panel.grid.major.x = element_blank(),
@@ -600,7 +617,7 @@ set.seed(4)
 res_order <- order_exp(df_l[sapply(df_l, ncol) < 50], n_rep)
 
 plot_order_res(res_order, res_real)
-save_plot(here::here("../opencesp-examples/joint_density/plots"), 9, 5.5)
+save_plot(plot_dir, 9, 5.5)
 
 
 ######################################
@@ -700,4 +717,4 @@ synthetic <- pmin(pmax(synthetic, 0), 1)
 
 plot_pairs(synthetic, original)
 
-save_plot(here::here("../opencesp-examples/joint_density/plots"), 7, 3.5)
+save_plot(plot_dir, 7, 3.5)
